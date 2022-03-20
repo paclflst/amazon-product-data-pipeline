@@ -2,11 +2,14 @@ import asyncio
 import concurrent.futures
 import requests
 import os
+from jobs.services.file_serivce import FileService
 
 MAX_RETRIES = 1
-URL = 'http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Movies_and_TV.json.gz'
+# URL = 'http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Movies_and_TV.json.gz'
 # OUTPUT = 'amazon/video.json.gz'
-OUTPUT = '/usr/local/spark/resources/data/meta_movies_and_tv/meta_movies_and_tv.json.gz'
+# OUTPUT = '/usr/local/spark/resources/data/meta_movies_and_tv/meta_movies_and_tv.json.gz'
+
+fs = FileService()
 
 
 async def get_size(url):
@@ -15,28 +18,23 @@ async def get_size(url):
     return size
 
 
-def download_range(url, start, end, output, retries = 0):
+def download_range(url, start, end, output, retries=0):
     try:
-        if end > 10 * 1000000 and end < 90 * 1000000:
-            test = 1/0
         headers = {'Range': f'bytes={start}-{end}'}
-        response = requests.get(url, headers=headers)
-
-        with open(output, 'wb') as f:
-            for part in response.iter_content(1024):
-                f.write(part)
-        return True
+        with requests.get(url, headers=headers, stream=True) as response:
+            return fs.save_file_from_response(output, response)
     except Exception as e:
-        print(e, retries, end, '\n')
         if retries < MAX_RETRIES:
             download_range(url, start, end, output, retries+1)
         else:
             raise e
 
-def is_success(future):
-   return future.done() and not future.cancelled() and future.exception() is None
 
-async def download(executor, url, output, chunk_size=1000000):
+def is_success(future):
+    return future.done() and not future.cancelled() and future.exception() is None
+
+
+async def download(executor, url, output, chunk_size):
     loop = asyncio.get_event_loop()
 
     file_size = await get_size(url)
@@ -57,38 +55,26 @@ async def download(executor, url, output, chunk_size=1000000):
     done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
 
     if all(is_success(f) for f in done):
-        with open(output, 'wb') as o:
-            for i in range(len(chunks)):
-                chunk_path = f'{output}.part{i}'
-
-                with open(chunk_path, 'rb') as s:
-                    o.write(s.read())
-
-                os.remove(chunk_path)
+        fs.merge_files_into_one(
+            output, [f'{output}.part{i}' for i in range(len(chunks))])
     else:
         for f in pending:
             f.cancel()
         failed_future = next(f for f in done if not is_success(f))
         raise failed_future.exception()
 
-def parallel_download():
+
+def get_file_name_from_url(url):
+    return url.split('/')[-1].lower()
+
+
+def parallel_download(url, target_folder, chunk_size=1024*1024):
+    target_file_name = get_file_name_from_url(url)
+
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
     loop = asyncio.get_event_loop()
-
+    output_file = os.path.join(target_folder, target_file_name)
     try:
-        loop.run_until_complete(
-            download(executor, URL, OUTPUT)
-        )
-    finally:
-        loop.close()
-
-if __name__ == '__main__':
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
-    loop = asyncio.get_event_loop()
-
-    try:
-        loop.run_until_complete(
-            download(executor, URL, OUTPUT)
-        )
+        loop.run_until_complete(download(executor, url, output_file, chunk_size))
     finally:
         loop.close()
