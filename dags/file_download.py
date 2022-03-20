@@ -1,17 +1,11 @@
 import sys
-import pkgutil
-print("package"*4)
-
-print([name for _, name, _ in pkgutil.iter_modules(['/usr/local/airflow/dags'])] )
-import site; site.getsitepackages()
-print(site.getsitepackages())
-
-
+import os
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
 from datetime import datetime, timedelta
 from jobs import file_downloader as fd
+from utils.logging import LOG_LEVEL, LOG_FILE
 
 ###############################################
 # Parameters
@@ -43,7 +37,10 @@ default_args = {
     "retries": 1,
     "retry_delay": timedelta(minutes=1)
 }
-
+env_vars = {
+    "LOG_FILE": LOG_FILE,#"/usr/local/spark/resources/outfile.log"
+    "LOG_LEVEL": LOG_LEVEL
+}
 
 dag = DAG(
         dag_id="file-download", 
@@ -83,14 +80,29 @@ for k,v in task_def.items():
     task_id = f'spark_extract_{v["obj_type"]}_{v["obj_name"]}'
     spark_extract_job = SparkSubmitOperator(
         task_id=task_id,
-        application=f'{app_folder}/raw_data_processor.py', # Spark application path created in airflow and spark cluster
+        application=f'{app_folder}/raw_data_processor.py',
         name=task_id,
         conn_id='spark_default',
-        verbose=1,
         application_args=[v['obj_name'], v['target_folder'], v['obj_type'], postgres_db,postgres_user,postgres_pwd],
         jars=postgres_driver_jar,
         driver_class_path=postgres_driver_jar,
+        env_vars=env_vars,
         dag=dag)
 
     prev_task>>spark_extract_job
     prev_task = spark_extract_job
+
+
+task_id = f'spark_process_month_dm'
+spark_dm_job = SparkSubmitOperator(
+        task_id=task_id,
+        application=f'{app_folder}/month_dm_processor.py',
+        name=task_id,
+        conn_id='spark_default',
+        application_args=['meta_movies_and_tv', 'ratings_movies_and_tv', 'dm_ratings_by_month', postgres_db,postgres_user,postgres_pwd],
+        jars=postgres_driver_jar,
+        driver_class_path=postgres_driver_jar,
+        env_vars=env_vars,
+        dag=dag)
+
+spark_extract_job >> spark_dm_job

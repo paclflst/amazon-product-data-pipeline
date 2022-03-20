@@ -3,13 +3,12 @@ import concurrent.futures
 import requests
 import os
 from jobs.services.file_serivce import FileService
+from utils.logging import get_logger
 
 MAX_RETRIES = 1
-# URL = 'http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Movies_and_TV.json.gz'
-# OUTPUT = 'amazon/video.json.gz'
-# OUTPUT = '/usr/local/spark/resources/data/meta_movies_and_tv/meta_movies_and_tv.json.gz'
 
 fs = FileService()
+logger = get_logger(__name__)
 
 
 async def get_size(url):
@@ -26,6 +25,7 @@ def download_range(url, start, end, output, retries=0):
     except Exception as e:
         if retries < MAX_RETRIES:
             download_range(url, start, end, output, retries+1)
+            logger.warning(f'Error while downloading chunk from {url}:\n{e}')
         else:
             raise e
 
@@ -38,6 +38,7 @@ async def download(executor, url, output, chunk_size):
     loop = asyncio.get_event_loop()
 
     file_size = await get_size(url)
+    logger.debug(f'File size from {url} is {file_size/(1024*1024)}M')
     chunks = range(0, file_size, chunk_size)
 
     tasks = [
@@ -68,13 +69,18 @@ def get_file_name_from_url(url):
     return url.split('/')[-1].lower()
 
 
-def parallel_download(url, target_folder, chunk_size=1024*1024):
+def parallel_download(url, target_folder, chunk_size=1024*1024, max_workers=4):
+    logger.debug(f'Start downloading {url} to {target_folder}')
     target_file_name = get_file_name_from_url(url)
 
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
     loop = asyncio.get_event_loop()
     output_file = os.path.join(target_folder, target_file_name)
     try:
         loop.run_until_complete(download(executor, url, output_file, chunk_size))
+        logger.debug(f'Finish downloading {url} to {target_folder}')
+    except Exception as e:
+        logger.error(f'Failed downloading {url}:\n{e}')
+        raise e
     finally:
         loop.close()

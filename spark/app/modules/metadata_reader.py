@@ -21,7 +21,7 @@ class MetadataReader(DataReader):
         metadata_df = spark \
             .read \
             .option('mode', 'DROPMALFORMED') \
-            .json(f'{target_folder}/*.gz', schema=self.schema)
+            .json(f'{target_folder}/*.gz', schema=self.schema, allowBackslashEscapingAnyCharacter=True)
         metadata_df = metadata_df \
             .withColumnRenamed('salesRank', 'sales_rank') \
             .withColumnRenamed('imUrl', 'im_url')

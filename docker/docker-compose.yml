@@ -17,7 +17,7 @@ services:
 
     # airflow LocalExecutor
     airflow-webserver:
-        image: docker-airflow-spark:1.10.7_3.1.2
+        image: paclflst/docker-airflow-spark:1.10.7_3.1.2
         restart: always
         networks:
             - default_net
@@ -26,12 +26,16 @@ services:
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
-            # - AIRFLOW_CONN_SPARK_DEFAULT=spark://spark:7077
             - AIRFLOW_CONN_STR_SPARK_DEFAULT=spark://spark:7077
+            # - LOG_FILE=/usr/local/spark/resources/outfile.log
+            - LOG_FILE=/usr/local/spark/logs/outfile.log
+            - LOG_LEVEL=DEBUG
         volumes:
             - ../dags:/usr/local/airflow/dags #DAG folder
             - ../spark/app:/usr/local/spark/app #Spark Scripts (Must be the same path in airflow and Spark Cluster)
             - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
+            - ../spark/app/utils:/usr/local/airflow/dags/utils # utils folder
+            - ../logs:/usr/local/spark/logs
         ports:
             - "8282:8282"
         command: webserver
@@ -57,6 +61,7 @@ services:
         volumes:
             - ../spark/app:/usr/local/spark/app # Spark scripts folder (Must be the same path in airflow and Spark Cluster)
             - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
+            - ../logs:/usr/local/spark/logs
         ports:
             - "8181:8080"
             - "7077:7077"
@@ -78,7 +83,28 @@ services:
         volumes:
             - ../spark/app:/usr/local/spark/app # Spark scripts folder (Must be the same path in airflow and Spark Cluster)
             - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
+            - ../logs:/usr/local/spark/logs
+            # - ../utils:/usr/local/spark/app/modules/utils # utils folder
 
+    web-api:
+        # image: flask_docker:latest
+        build: ../web_api
+        restart: always
+        networks:
+            - default_net
+        depends_on:
+            - postgres
+        environment:
+            - EXECUTOR=Local
+            - LOG_LEVEL=DEBUG
+            - LOG_FILE=/usr/local/spark/logs/outfile.log
+        volumes:
+            - ../web_api:/app 
+            - ../spark/app/utils:/app/utils # utils folder
+            - ../logs:/usr/local/spark/logs
+        ports:
+            - "5000:5000"
+        command: app.py
 
 networks:
     default_net:
