@@ -29,7 +29,7 @@ To execute the import use Airflow web UI to trigger amazon-product-data-pipeline
 
 [http://localhost:8282/](http://localhost:8282/)
 
-![alt text](https://github.com/paclflst/amazon-product-data-pipeline/blob/main/images/dar_main_screen.png?raw=true)
+![alt text](https://github.com/paclflst/amazon-product-data-pipeline/blob/main/images/dag_main_screen.png?raw=true)
 
 
 ### Web API
