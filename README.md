@@ -9,7 +9,7 @@ The solution consists of 4 parts:
 - Flask web api (simple application) to display transforamtion/aggregation results
 - Jupyter notebook to explore Spark transformations (uncomment in docker-compose file)
 
-![alt text](https://github.com/paclflst/amazon-product-data-pipeline/blob/main/images/prj_setup.png?raw=true)
+![alt text](https://github.com/paclflst/amazon-product-data-pipeline/blob/main/images/prj_setup_schema.png?raw=true)
 
 ### Prerequisites
 
@@ -29,7 +29,7 @@ To execute the import use Airflow web UI to trigger file-download DAG:
 
 [http://localhost:8282/](http://localhost:8282/)
 
-![alt text](https://github.com/paclflst/amazon-product-data-pipeline/blob/main/images/prj_setup_schema.png?raw=true)
+![alt text](https://github.com/paclflst/amazon-product-data-pipeline/blob/main/images/dar_main_screen.png?raw=true)
 
 
 ### Web API
