@@ -1,5 +1,5 @@
 import asyncio
-import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 import requests
 import os
 from jobs.services.file_serivce import FileService
@@ -17,7 +17,7 @@ async def get_size(url):
     return size
 
 
-def download_range(url, start, end, output, retries=0):
+def download_range(url: str, start: int, end: int, output: str, retries: int=0):
     try:
         headers = {'Range': f'bytes={start}-{end}'}
         with requests.get(url, headers=headers, stream=True) as response:
@@ -34,7 +34,7 @@ def is_success(future):
     return future.done() and not future.cancelled() and future.exception() is None
 
 
-async def download(executor, url, output, chunk_size):
+async def download(executor: ThreadPoolExecutor, url: str, output: str, chunk_size: int):
     loop = asyncio.get_event_loop()
 
     file_size = await get_size(url)
@@ -69,11 +69,11 @@ def get_file_name_from_url(url):
     return url.split('/')[-1].lower()
 
 
-def parallel_download(url, target_folder, chunk_size=1024*1024, max_workers=4):
+def parallel_download(url: str, target_folder: str, chunk_size: int=1024*1024, max_workers: int=4):
     logger.debug(f'Start downloading {url} to {target_folder}')
     target_file_name = get_file_name_from_url(url)
 
-    executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+    executor = ThreadPoolExecutor(max_workers=max_workers)
     loop = asyncio.get_event_loop()
     output_file = os.path.join(target_folder, target_file_name)
     try:

@@ -27,7 +27,7 @@ services:
             - LOAD_EX=n
             - EXECUTOR=Local
             - AIRFLOW_CONN_STR_SPARK_DEFAULT=spark://spark:7077
-            # - LOG_FILE=/usr/local/spark/resources/outfile.log
+            - AIRFLOW_CONN_POSTGRES_FOR_SPARK=postgres://test:postgres@postgres/test
             - LOG_FILE=/usr/local/spark/logs/outfile.log
             - LOG_LEVEL=DEBUG
         volumes:
@@ -84,7 +84,6 @@ services:
             - ../spark/app:/usr/local/spark/app # Spark scripts folder (Must be the same path in airflow and Spark Cluster)
             - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
             - ../logs:/usr/local/spark/logs
-            # - ../utils:/usr/local/spark/app/modules/utils # utils folder
 
     web-api:
         # image: flask_docker:latest
