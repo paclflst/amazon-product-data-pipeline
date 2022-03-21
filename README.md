@@ -50,6 +50,8 @@ $ psql -U airflow -h localhost -p 5432 -d test
 ```
 then enter *airflow*
 
+<img src="https://github.com/paclflst/amazon-product-data-pipeline/blob/main/images/db_schema.png?raw=true" width="500">
+
 ### Logging
 Solution logs can be accessed in *logs* folder
 
