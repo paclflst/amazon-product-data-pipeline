@@ -31,6 +31,12 @@ To execute the import use Airflow web UI to trigger amazon-product-data-pipeline
 
 ![alt text](https://github.com/paclflst/amazon-product-data-pipeline/blob/main/images/dag_main_screen.png?raw=true)
 
+or use command
+
+```shell
+$ docker-compose -f docker/docker-compose.yml run airflow-webserver \
+    airflow trigger_dag amazon-product-data-pipeline 
+```
 
 ### Web API
 To check import results use simple web API to see top 5, bottom 5 and top 5 most imporved raing wise movies for a given month:
