@@ -44,7 +44,7 @@ env_vars = {
 }
 
 dag = DAG(
-    dag_id="file-download",
+    dag_id="amazon-product-data-pipeline",
     description="This DAG runs a python app to download files in parallel manner, parse them, transform the data and aggregate it",
     default_args=default_args,
     schedule_interval=timedelta(1)

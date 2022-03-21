@@ -25,7 +25,7 @@ Start needed services with docker-compose (since the project contains Spark inst
 $ docker-compose -f docker/docker-compose.yml up -d
 ```
 
-To execute the import use Airflow web UI to trigger file-download DAG:
+To execute the import use Airflow web UI to trigger amazon-product-data-pipeline DAG:
 
 [http://localhost:8282/](http://localhost:8282/)
 
