@@ -62,9 +62,11 @@ then enter *airflow*
 Solution logs can be accessed in *logs* folder
 
 ### Useful urls
-[Airflow: ](http://localhost:8282/)
-[Spark Master: ](http://localhost:8181/)
-[Jupyter Notebook: ](http://127.0.0.1:8888/)
+*Airflow:* [http://localhost:8282/](http://localhost:8282/)
+
+*Spark Master:* [http://localhost:8181/](http://localhost:8181/)
+
+*Jupyter Notebook:* [http://127.0.0.1:8888/](http://127.0.0.1:8888/)
 
 - For Jupyter notebook, you must copy the URL with the token generated when the container is started and paste in your browser. The URL with the token can be taken from container logs using:
 
