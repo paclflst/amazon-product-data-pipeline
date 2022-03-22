@@ -85,6 +85,57 @@ services:
             - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
             - ../logs:/usr/local/spark/logs
 
+    spark-worker-2:
+        image: bitnami/spark:3.1.2
+        user: root
+        networks:
+            - default_net
+        environment:
+            - SPARK_MODE=worker
+            - SPARK_MASTER_URL=spark://spark:7077
+            - SPARK_WORKER_MEMORY=1100m
+            - SPARK_WORKER_CORES=1
+            - SPARK_RPC_AUTHENTICATION_ENABLED=no
+            - SPARK_RPC_ENCRYPTION_ENABLED=no
+            - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+            - SPARK_SSL_ENABLED=no
+        volumes:
+            - ../spark/app:/usr/local/spark/app # Spark scripts folder (Must be the same path in airflow and Spark Cluster)
+            - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
+            - ../logs:/usr/local/spark/logs
+
+    spark-worker-3:
+        image: bitnami/spark:3.1.2
+        user: root
+        networks:
+            - default_net
+        environment:
+            - SPARK_MODE=worker
+            - SPARK_MASTER_URL=spark://spark:7077
+            - SPARK_WORKER_MEMORY=1100m
+            - SPARK_WORKER_CORES=1
+            - SPARK_RPC_AUTHENTICATION_ENABLED=no
+            - SPARK_RPC_ENCRYPTION_ENABLED=no
+            - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+            - SPARK_SSL_ENABLED=no
+        volumes:
+            - ../spark/app:/usr/local/spark/app # Spark scripts folder (Must be the same path in airflow and Spark Cluster)
+            - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
+            - ../logs:/usr/local/spark/logs
+
+    # Jupyter notebook
+    jupyter-spark:
+        image: jupyter/pyspark-notebook:spark-3.1.2
+        networks:
+            - default_net
+        ports:
+          - "8888:8888"
+          - "4040-4080:4040-4080"
+        volumes:
+          - ../notebooks:/home/jovyan/work/notebooks/
+          - ../spark/resources/data:/home/jovyan/work/data/
+          - ../spark/resources/jars:/home/jovyan/work/jars/
+
     web-api:
         # image: flask_docker:latest
         build: ../web_api
@@ -104,55 +155,6 @@ services:
         ports:
             - "5000:5000"
         command: app.py
-
+          
 networks:
     default_net:
-
-    # spark-worker-2:
-    #     image: bitnami/spark:3.1.2
-    #     user: root
-    #     networks:
-    #         - default_net
-    #     environment:
-    #         - SPARK_MODE=worker
-    #         - SPARK_MASTER_URL=spark://spark:7077
-    #         - SPARK_WORKER_MEMORY=1100m
-    #         - SPARK_WORKER_CORES=1
-    #         - SPARK_RPC_AUTHENTICATION_ENABLED=no
-    #         - SPARK_RPC_ENCRYPTION_ENABLED=no
-    #         - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-    #         - SPARK_SSL_ENABLED=no
-    #     volumes:
-    #         - ../spark/app:/usr/local/spark/app # Spark scripts folder (Must be the same path in airflow and Spark Cluster)
-    #         - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
-
-    # spark-worker-3:
-    #     image: bitnami/spark:3.1.2
-    #     user: root
-    #     networks:
-    #         - default_net
-    #     environment:
-    #         - SPARK_MODE=worker
-    #         - SPARK_MASTER_URL=spark://spark:7077
-    #         - SPARK_WORKER_MEMORY=500m
-    #         - SPARK_WORKER_CORES=1
-    #         - SPARK_RPC_AUTHENTICATION_ENABLED=no
-    #         - SPARK_RPC_ENCRYPTION_ENABLED=no
-    #         - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-    #         - SPARK_SSL_ENABLED=no
-    #     volumes:
-    #         - ../spark/app:/usr/local/spark/app # Spark scripts folder (Must be the same path in airflow and Spark Cluster)
-    #         - ../spark/resources:/usr/local/spark/resources #Resources folder (Must be the same path in airflow and Spark Cluster)
-
-    #Jupyter notebook
-    # jupyter-spark:
-    #     image: jupyter/pyspark-notebook:spark-3.1.2
-    #     networks:
-    #         - default_net
-    #     ports:
-    #       - "8888:8888"
-    #       - "4040-4080:4040-4080"
-    #     volumes:
-    #       - ../notebooks:/home/jovyan/work/notebooks/
-    #       - ../spark/resources/data:/home/jovyan/work/data/
-    #       - ../spark/resources/jars:/home/jovyan/work/jars/
