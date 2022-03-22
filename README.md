@@ -39,7 +39,7 @@ $ docker-compose -f docker/docker-compose.yml run airflow-webserver \
 ```
 
 ### Web API
-To check import results use simple web API to see top 5, bottom 5 and top 5 most imporved raing wise movies for a given month:
+To check import results use simple web API to see top 5, bottom 5 and top 5 most imporved rating wise movies for a given month:
 
 [http://localhost:5000/](http://localhost:5000/)
 
